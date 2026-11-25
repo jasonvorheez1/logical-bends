@@ -76,7 +76,6 @@ export class Fight {
     this.shake = null;
     this.envColor = null;
     this.allPalFX = null;
-    this.combos = { 1: { hits: 0, dmg: 0, show: 0, last: 0 }, 2: { hits: 0, dmg: 0, show: 0, last: 0 } };
     this.messages = [];
     this.roundsExistedMap = new Map();
     this.showBoxes = false;
@@ -125,6 +124,8 @@ export class Fight {
 
   // ---------------- round flow ----------------
   startRound(first = false) {
+    this.combos = { 1: { hits: 0, dmg: 0, show: 0, last: 0 }, 2: { hits: 0, dmg: 0, show: 0, last: 0 } };
+    this.lastHit = null;
     this.roundState = 0;
     this.roundTick = 0;
     this.roundTime = 0;
@@ -152,7 +153,8 @@ export class Fight {
       const ip = c.def.consts['data.intpersistindex'] ?? 60, fp = c.def.consts['data.floatpersistindex'] ?? 40;
       if (!first) { for (let i = 0; i < Math.min(60, ip); i++) c.vars[i] = 0; for (let i = 0; i < Math.min(40, fp); i++) c.fvars[i] = 0; }
       c.sysvars.fill(0); c.sysfvars.fill(0);
-      c.cmd?.clear();
+      c.combo = { hits: 0, dmg: 0 };
+      c.cmd.reset();
       audio.stop(c, -1);
       c.changeState(5900, 0);
       this.roundsExistedMap.set(c, (this.roundsExistedMap.get(c) || 0) + (first ? 0 : 0));
@@ -392,6 +394,13 @@ export class Fight {
     };
     const list = this.entities.slice();
     for (const e of list) { e.gotHitThisTick = false; }
+    // NotHitBy / HitBy / HitOverride timers count down at the start of the tick, so a "time = 1"
+    // slot set by state code is still active during this tick's hit detection.
+    for (const e of list) {
+      if (e.destroyed || frozen(e) || e.pauseTime > 0) continue;
+      for (const arr of [e.notHitBy, e.hitBy]) for (let i = 0; i < 2; i++) if (arr[i] && arr[i].time >= 0 && --arr[i].time <= 0) arr[i] = null;
+      e.hitOverride = e.hitOverride.map(h => (h && h.time !== -1 && --h.time <= 0 ? null : h));
+    }
     // state processing
     for (const e of list) {
       if (e.destroyed) continue;
@@ -404,6 +413,8 @@ export class Fight {
       if (frozen(e)) continue;
       this.physics(e);
     }
+    // who was allowed to act this tick (decided before the pause timers count down)
+    const movers = pause ? new Set(list.filter(e => !frozen(e))) : null;
     if (pause) {
       if (pause.movetime > 0) pause.movetime--;
       for (const e of list) if (e.isHelper && !frozen(e)) { if (pause.isSuper && e.supermovetime > 0) e.supermovetime--; if (!pause.isSuper && e.pausemovetime > 0) e.pausemovetime--; }
@@ -412,6 +423,14 @@ export class Fight {
     if (!pause) {
       this.hitDetection();
       this.updateProjectiles();
+    } else {
+      this.hitDetection(e => !movers.has(e));
+    }
+    // Animations advance AFTER hit detection, so hits are checked against the frame that was
+    // current when the state code ran (one-frame Clsn1 boxes timed with AnimElem now connect).
+    for (const e of list) {
+      if (e._stepAnim && !e.destroyed) e.anim.step();
+      e._stepAnim = false;
     }
     this.pushPlayers();
     this.updateExplods(pause);
@@ -450,8 +469,6 @@ export class Fight {
     if (e.moveHit > 0) e.moveHit++;
     if (e.moveGuarded > 0) e.moveGuarded++;
     if (e.moveReversed > 0) e.moveReversed++;
-    for (const arr of [e.notHitBy, e.hitBy]) for (let i = 0; i < 2; i++) if (arr[i] && arr[i].time >= 0 && --arr[i].time <= 0) arr[i] = null;
-    e.hitOverride = e.hitOverride.map(h => (h && h.time !== -1 && --h.time <= 0 ? null : h));
     if (e.movetype === 'H') {
       if (e.ghv.hittime > -1) e.ghv.hittime--;
       if (e.ghv['fall.recovertime'] > 0) e.ghv['fall.recovertime']--;
@@ -494,7 +511,7 @@ export class Fight {
         if (e.combo) e.combo.chain = 0;
       }
     }
-    e.anim.step();
+    e._stepAnim = true; // stepped after hit detection (see tick)
   }
 
   // ---------------- collision ----------------
@@ -569,25 +586,10 @@ export class Fight {
     return false;
   }
 
-  hitDetection() {
-    const attackers = this.entities.filter(e => e.hitdef && e.hitdef.active && !e.destroyed && e.pauseTime <= 0);
-    const hits = [];
-    for (const a of attackers) {
-      const hd = a.hitdef;
-      const c1 = this.boxes(a, 1);
-      if (!c1) continue;
-      for (const d of this.entities) {
-        if (d === a || d.destroyed) continue;
-        if (!this.canBeHit(a, d, hd)) continue;
-        const c2 = this.boxes(d, 2);
-        if (!c2) continue;
-        const ov = this.overlap(c1, c2);
-        if (!ov) continue;
-        if (hd.reversal) continue;
-        hits.push({ a, d, hd, ov });
-      }
-    }
-    // reversals: a ReversalDef catches an incoming attacker's hitdef
+  hitDetection(frozen = null) {
+    // During a (Super)Pause only the fighter allowed to move (movetime) can land hits.
+    const attackers = this.entities.filter(e => e.hitdef && e.hitdef.active && !e.destroyed && e.pauseTime <= 0 && !(frozen && frozen(e)));
+    // reversals first: a ReversalDef catches an incoming attack, which is then cancelled
     for (const r of attackers.filter(e => e.hitdef && e.hitdef.reversal)) {
       const rh = r.hitdef;
       if (!rh || !rh.active) continue;
@@ -602,8 +604,25 @@ export class Fight {
         r.pauseTime = rh.pauseP1; a.pauseTime = rh.pauseP2;
         r.targets.push({ c: a, id: rh.id });
         if (rh.p1stateno != null) r.changeState(rh.p1stateno);
-        if (rh.p2stateno != null) a.changeState(rh.p2stateno, undefined, undefined, rh.p2getp1state ? r.root : a);
+        if (rh.p2stateno != null) { a.changeState(rh.p2stateno, undefined, undefined, rh.p2getp1state ? r.root : a); a.movetype = 'H'; a.ctrl = 0; }
+        if (rh.p2facing === 1) a.facing = -r.facing;
         break;
+      }
+    }
+    const hits = [];
+    for (const a of attackers) {
+      const hd = a.hitdef;
+      if (!hd || !hd.active || hd.reversal) continue;
+      const c1 = this.boxes(a, 1);
+      if (!c1) continue;
+      for (const d of this.entities) {
+        if (d === a || d.destroyed) continue;
+        if (!this.canBeHit(a, d, hd)) continue;
+        const c2 = this.boxes(d, 2);
+        if (!c2) continue;
+        const ov = this.overlap(c1, c2);
+        if (!ov) continue;
+        hits.push({ a, d, hd, ov });
       }
     }
     for (const h of hits) {
@@ -1162,11 +1181,18 @@ export class Fight {
     // afterimages
     if (e.afterHist.length && e.afterimage) {
       const ai = e.afterimage;
+      const blend = ai.trans === 'none' ? null : { mode: ai.trans === 'sub' ? 'sub' : 'add', src: 256 };
+      let shown = 0;
       for (let i = e.afterHist.length - 1; i >= 1; i--) {
         if (i % ai.gap) continue;
         const h = e.afterHist[i];
-        const alpha = 0.55 * (1 - i / e.afterHist.length);
-        this.blit(g, owner, h.f, pi, h.x, h.y, h.facing, { xs, ys, alpha, trans: { mode: 'add', src: 256 }, palfx: { add: ai.add.map(v => v), mul: [256 * ai.mul[0], 256 * ai.mul[1], 256 * ai.mul[2]], t: 0, sinadd: [0, 0, 0, 1], color: ai.palcolor } });
+        const k = i / ai.gap; // how many steps old this copy is
+        // first copy: contrast + brightness; each older copy: * palmul + paladd (as in MUGEN)
+        const mul = ai.contrast.map((ct, j) => ct * Math.pow(ai.mul[j], k));
+        const add = ai.bright.map((b, j) => b + ai.add[j] * k);
+        const alpha = blend ? Math.max(0.08, 0.45 * (1 - i / (ai.length + 1))) : 1;
+        if (blend && ++shown > 6) break; // cap stacked additive copies so they never wash out the screen
+        this.blit(g, owner, h.f, pi, h.x, h.y, h.facing, { xs, ys, alpha, trans: blend, palfx: { add, mul, t: 0, sinadd: [0, 0, 0, 1], color: ai.palcolor } });
       }
     }
     const palfx = mergePalFX(e.palfx, this.allPalFX);

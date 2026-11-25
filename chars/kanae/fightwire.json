@@ -2,45 +2,181 @@
   "def": "aok_kanae.def",
   "tagline": "Grabs first, asks never.",
   "nativeAI": true,
-  "aiVar": { "var": 58, "value": 1 },
-  "skipSt": ["kanae_override.st"],
-  "palettes": ["Palettes/kanae1.act", "Palettes/kanae6.act", "Palettes/SionPurple.act", "Palettes/Heidern.act", "Palettes/GREEN.act", "Palettes/heyg.act", "Palettes/STARS.act", "Palettes/guard.act", "Palettes/Mgbenz.act", "Palettes/kiri-Heat.act", "Palettes/kiri-Luka.act", "Palettes/Mango.act"],
-  "easy": {
-    "special": { "N": "QCFy", "F": "QCFy", "B": "QCBy", "U": "DDy", "D": "DDy" },
-    "ex": { "N": "QCFz", "F": "QCFz", "B": "QCBz", "U": "DDz", "D": "DDz" },
-    "super": { "N": "QCF Super", "F": "QCF Super", "B": "QCB Super", "U": "DD Super", "D": "DD Super", "DF": "Finish" }
+  "aiVar": {
+    "var": 58,
+    "value": 1
   },
-  "autoCombo": { "medium": "y", "heavy": "z" },
+  "skipSt": [
+    "kanae_override.st"
+  ],
+  "palettes": [
+    "Palettes/kanae1.act",
+    "Palettes/kanae6.act",
+    "Palettes/SionPurple.act",
+    "Palettes/Heidern.act",
+    "Palettes/GREEN.act",
+    "Palettes/heyg.act",
+    "Palettes/STARS.act",
+    "Palettes/guard.act",
+    "Palettes/Mgbenz.act",
+    "Palettes/kiri-Heat.act",
+    "Palettes/kiri-Luka.act",
+    "Palettes/Mango.act"
+  ],
+  "easy": {
+    "specialAir": {
+      "N": "throw"
+    },
+    "special": {
+      "N": "QCFx",
+      "F": "QCFy",
+      "B": "QCBy",
+      "U": "DDy",
+      "D": "DDy"
+    },
+    "ex": {
+      "N": "QCFz",
+      "F": "QCFz",
+      "B": "QCBz",
+      "U": "DDz",
+      "D": "DDz"
+    },
+    "super": {
+      "N": "QCF Super",
+      "F": "QCF Super",
+      "B": "QCB Super",
+      "U": "DD Super",
+      "D": "DD Super"
+    }
+  },
+  "autoCombo": {
+    "medium": "y",
+    "heavy": "z"
+  },
   "combo": {
     "ranks": {
-      "light": [200, 400, 600],
-      "medium": [210, 410, 610],
-      "heavy": [220, 230, 620, 630, 640],
-      "launcher": [420]
+      "light": [
+        200,
+        400,
+        600
+      ],
+      "medium": [
+        210,
+        410,
+        610
+      ],
+      "heavy": [
+        220,
+        230,
+        620,
+        630,
+        640
+      ],
+      "launcher": [
+        420
+      ]
     },
-    "specialRange": [1000, 1999],
-    "superRange": [3000, 3999],
-    "jumpCancel": [420],
-    "jump": [40]
+    "specialRange": [
+      1000,
+      1999
+    ],
+    "superRange": [
+      3000,
+      3999
+    ],
+    "jumpCancel": [
+      420
+    ],
+    "jump": [
+      40
+    ]
   },
   "movelist": {
     "Specials (E + direction)": [
-      ["Command Throw", "E / E + Fwd", "QCF + A/B/C"],
-      ["Counter Throw", "E + Back", "QCB + A/B/C"],
-      ["Anti-Air Throw", "E + Up / Down", "D, D + A/B/C"],
-      ["Strongest version (C)", "E + Q + direction", "use C"]
+      [
+        "Quick grab (close)",
+        "E",
+        "QCF + X"
+      ],
+      [
+        "Lunging grab",
+        "E + Fwd",
+        "QCF + Y"
+      ],
+      [
+        "Air throw (both airborne)",
+        "E in air",
+        "X+Y in air"
+      ],
+      [
+        "Counter Throw",
+        "E + Back",
+        "QCB + X/Y/Z"
+      ],
+      [
+        "Anti-Air Throw",
+        "E + Up / Down",
+        "D, D + X/Y/Z"
+      ],
+      [
+        "Strongest version (C)",
+        "E + Q + direction",
+        "use Z"
+      ]
     ],
     "Supers (Q + direction, 1 bar)": [
-      ["Throw Super", "Q / Q + Fwd", "QCF + B+C"],
-      ["Counter Super", "Q + Back", "QCB + B+C"],
-      ["Anti-Air Super", "Q + Up / Down", "D, D + B+C"],
-      ["Finale", "Q + Down-Fwd", "A+B+C"]
+      [
+        "Throw Super",
+        "Q / Q + Fwd",
+        "QCF + Y+Z"
+      ],
+      [
+        "Counter Super",
+        "Q + Back",
+        "QCB + Y+Z"
+      ],
+      [
+        "Anti-Air Super",
+        "Q + Up / Down",
+        "D, D + Y+Z"
+      ],
+      [
+        "Follow-up: late in Throw Super",
+        "Q + Down",
+        "D, D + Y+Z"
+      ],
+      [
+        "Finale: follow-up landing",
+        "Q + Down-Fwd",
+        "X+Y+Z"
+      ],
+      [
+        "Finale (follow-up)",
+        "A+B+C during Anti-Air Super part 2",
+        "A+B+C"
+      ]
     ],
     "Buttons": [
-      ["A / B / C attacks", "L / ; / '", "X / Y / Z"],
-      ["Throw", "L + ;", "A+B"],
-      ["Reflect guard", "; + '", "B+C"],
-      ["Forward C / Roll", "Fwd + ' / Down-Fwd + '", ""]
+      [
+        "A / B / C attacks",
+        "L / ; / '",
+        "X / Y / Z"
+      ],
+      [
+        "Throw",
+        "L + ;",
+        "X+Y"
+      ],
+      [
+        "Reflect guard",
+        "; + '",
+        "Y+Z"
+      ],
+      [
+        "Forward C / Roll",
+        "Fwd + ' / Down-Fwd + '",
+        ""
+      ]
     ]
   }
 }

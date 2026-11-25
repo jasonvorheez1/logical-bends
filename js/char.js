@@ -254,6 +254,7 @@ export class Char {
     this.animNo = no;
     this.animOwner = a ? src : this.def;
     this.anim.set(a || null, this.animOwner, Math.max(0, (elem | 0) - 1));
+    this._stepAnim = false; // a freshly set animation shows its first tick in full
   }
 
   // ---------- states ----------
@@ -634,13 +635,16 @@ export class Char {
       }
       case 'remappal': return;
       case 'afterimage': {
+        // MUGEN defaults: no blending, each older copy is darkened (palmul) and tinted (paladd)
         this.afterimage = {
           time: has(ct, 'time') ? pn(ct, 'time', c) : 1, length: has(ct, 'length') ? pn(ct, 'length', c) : 20,
           gap: Math.max(1, has(ct, 'framegap') ? pn(ct, 'framegap', c) : 4), timegap: Math.max(1, has(ct, 'timegap') ? pn(ct, 'timegap', c) : 1),
-          trans: pstr(ct, 'trans', 'add'),
+          trans: pstr(ct, 'trans', 'none'),
           palcolor: has(ct, 'palcolor') ? pn(ct, 'palcolor', c) : 256,
-          add: [pn(ct, 'paladd', c, 0, 30), pn(ct, 'paladd', c, 1, 30), pn(ct, 'paladd', c, 2, 30)],
-          mul: [pn(ct, 'palmul', c, 0, 0.65), pn(ct, 'palmul', c, 1, 0.65), pn(ct, 'palmul', c, 2, 0.65)],
+          bright: [0, 1, 2].map(i => pn(ct, 'palbright', c, i, 30)),
+          contrast: [0, 1, 2].map(i => pn(ct, 'palcontrast', c, i, [120, 120, 220][i])),
+          add: [0, 1, 2].map(i => pn(ct, 'paladd', c, i, [10, 10, 25][i])),
+          mul: [0, 1, 2].map(i => pn(ct, 'palmul', c, i, [0.65, 0.65, 0.75][i])),
           t: 0,
         };
         this.afterHist = [];

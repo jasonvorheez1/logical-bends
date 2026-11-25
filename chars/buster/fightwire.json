@@ -1,0 +1,39 @@
+{
+  "def": "Buster.def",
+  "tagline": "Are you okay? BUSTER WOLF!",
+  "nativeAI": true,
+  "aiVar": { "var": 59, "value": 1 },
+  "easy": {
+    "special": { "N": "x", "F": "y", "B": "a", "U": "b", "D": "z" },
+    "ex": { "N": "counter", "F": "counter", "B": "counter", "U": "counter", "D": "counter" },
+    "super": { "N": "TheBigOne", "F": "c", "B": "TheBigOne", "U": "TheBigOne", "D": "TheBigOne" }
+  },
+  "autoCombo": { "medium": "y", "heavy": "z" },
+  "combo": {
+    "ranks": {
+      "light": [400, 430, 600, 630],
+      "medium": [410, 440, 610, 640],
+      "heavy": [620, 650],
+      "launcher": [420]
+    },
+    "specialRange": [200, 299],
+    "superRange": [3000, 3999],
+    "jumpCancel": [420],
+    "jump": [40]
+  },
+  "movelist": {
+    "Buster Wolves (standing buttons, or E + direction)": [
+      ["Buster Wolf (Mark of the Wolves)", "E", "X"],
+      ["Buster Wolf (KoF 2003)", "E + Fwd", "Y"],
+      ["Buster Wolf (KoF XIII)", "E + Down", "Z"],
+      ["Buster Wolf (SvC Chaos)", "E + Back", "A"],
+      ["Buster Wolf (Capcom vs SNK)", "E + Up", "B"],
+      ["Counter Wolf", "E + Q", "Z + C"]
+    ],
+    "Supers (Q + direction)": [
+      ["The Big One (1 bar)", "Q", "X + B + Z"],
+      ["Buster Legacy (2 bars)", "Q + Fwd", "C"]
+    ],
+    "Normals": [["Crouching and jumping attacks", "hold Down / jump + buttons", ""]]
+  }
+}

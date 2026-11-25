@@ -419,6 +419,7 @@ const screens = {
         ['EVIL KUNG FU MAN', 'The_None (Most_Mysterious) · via Logical Bends'],
         ['KANAE', 'aokmaniac13 · via Logical Bends'],
         ['UPPERCUT', 'The_None · via Logical Bends'],
+        ['BUSTER', 'Brergrsart'],
         ['KUNG FU MAN', 'Elecbyte (bundled with Ikemen GO)'],
         ['HIT SPARKS / COMMON SFX', 'Ikemen GO project (data/fightfx, data/common.snd)'],
         ['FORMAT REFERENCE', 'Elecbyte M.U.G.E.N docs · Ikemen GO (MIT)'],

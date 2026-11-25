@@ -405,7 +405,7 @@ triggerall = !var(0)
 triggerall = command = "Finish"
 triggerall = power >= 1000
 trigger1 = anim = 3152
-trigger1 = animelemtime(3) = 0
+trigger1 = animelemtime(3) = [0,5]
 
 ;---------------------------------------------------------------------------
 ;Command Throw

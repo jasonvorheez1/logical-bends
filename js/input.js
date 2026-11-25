@@ -28,7 +28,10 @@ class Keyboard {
       this.down.add(e.code);
     });
     addEventListener('keyup', e => this.down.delete(e.code));
-    addEventListener('blur', () => this.down.clear());
+    addEventListener('blur', () => {
+      this.down.clear();
+      this.latched.clear();
+    });
   }
 }
 export const keyboard = new Keyboard();
@@ -230,4 +233,9 @@ export class CommandBuffer {
   force(name, ticks = 4) { this.forced.set(name, ticks); }
   isActive(name) { return this.active.has(name) || this.forced.has(name); }
   clear() { this.active.clear(); this.forced.clear(); }
+  reset() {
+    this.clear();
+    this.hist.length = 0;
+    this._wasPaused = false;
+  }
 }
