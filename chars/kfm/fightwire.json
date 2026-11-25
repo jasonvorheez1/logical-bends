@@ -1,0 +1,113 @@
+{
+  "def": "kfm.def",
+  "tagline": "The original test dummy",
+  "nativeAI": false,
+  "easy": {
+    "special": {
+      "N": "QCF_y",
+      "F": "FF_b",
+      "B": "QCB_y",
+      "U": "upper_y",
+      "D": "QCF_b"
+    },
+    "ex": {
+      "N": "QCF_xy",
+      "F": "FF_ab",
+      "B": "QCB_xy",
+      "U": "upper_xy",
+      "D": "QCF_ab"
+    },
+    "super": {
+      "N": "TripleKFPalm",
+      "F": "TripleKFPalm",
+      "B": "SmashKFUpper",
+      "U": "SmashKFUpper",
+      "D": "SmashKFUpper"
+    }
+  },
+  "combo": {
+    "ranks": {
+      "light": [
+        200,
+        230,
+        400,
+        430,
+        600,
+        630
+      ],
+      "medium": [
+        210,
+        240,
+        440,
+        610,
+        640
+      ],
+      "launcher": [
+        410
+      ]
+    },
+    "specialRange": [
+      1000,
+      1999
+    ],
+    "superRange": [
+      3000,
+      3999
+    ],
+    "jumpCancel": [
+      410
+    ],
+    "jump": [
+      40
+    ]
+  },
+  "movelist": {
+    "Specials (E + direction)": [
+      [
+        "Kung Fu Palm",
+        "E",
+        "QCF + Punch"
+      ],
+      [
+        "Kung Fu Knee",
+        "E + Fwd",
+        "F, F + Kick"
+      ],
+      [
+        "Kung Fu Blow",
+        "E + Back",
+        "QCB + Punch"
+      ],
+      [
+        "Kung Fu Upper",
+        "E + Up",
+        "F, D, DF + Punch"
+      ],
+      [
+        "Kung Fu Zankou",
+        "E + Down",
+        "QCF + Kick"
+      ],
+      [
+        "EX version",
+        "E + Q + direction",
+        "two buttons"
+      ]
+    ],
+    "Supers (Q + direction, 1 bar)": [
+      [
+        "Triple Kung Fu Palm",
+        "Q / Q + Fwd",
+        "QCF, QCF + Punch"
+      ],
+      [
+        "Smash Kung Fu Upper",
+        "Q + Back / Up / Down",
+        "QCB, QCB + Punch"
+      ]
+    ]
+  },
+  "autoCombo": {
+    "medium": "y"
+  }
+}

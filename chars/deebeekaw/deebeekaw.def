@@ -1,0 +1,39 @@
+; Definition file for this guy
+; Contains all the filenames needed for the character
+
+; Player information
+[Info]
+name = "Most_Mysterious"        ;Name of character
+displayname = "Dee Bee Kaw" ;Name of character to display
+versiondate = 09,15,2011    ;Version date of character (MM-DD-YYYY)
+mugenversion = 04,14,2002   ;Version of M.U.G.E.N character works on
+author = "The_None"         ;Character author name
+pal.defaults = 1,2,6,5,4,11,12,10,8,7,9
+
+; Files for the player
+[Files]
+cmd     = riseoftherobots3.cmd   ;Command set
+cns     = stateoftheart.cns   ;Constants
+st      = stateoftheart.cns   ;States
+stcommon = common1.cns ;Common states
+sprite  = crysis3.sff   ;Sprite
+anim    = sfiii4th.air   ;Animation
+sound   = angeldust.snd   ;Sound
+pal1    = dlc4.act
+pal2    = dlc5.act
+pal3    = dlc6.act
+pal4    = dlc1.act
+pal5    = dlc2.act
+pal6    = dlc3.act
+pal7    = dlc7.act
+pal8    = dlc8.act
+pal9    = dlc9.act
+pal10    = dlc10.act
+pal11    = dlc11.act
+pal12    = dlc12.act
+
+
+; Arcade mode
+;[Arcade]
+;intro.storyboard = intro.def
+;ending.storyboard = ending.def

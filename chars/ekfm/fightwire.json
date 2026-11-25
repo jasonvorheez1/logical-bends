@@ -1,0 +1,217 @@
+{
+  "def": "ekfm2009.def",
+  "tagline": "Kung Fu Man's worst day, weaponized.",
+  "nativeAI": true,
+  "aiVar": {
+    "var": 59,
+    "value": 1
+  },
+  "palettes": [
+    "ekfm5.act",
+    "ekfm.act",
+    "ekfm3.act",
+    "ekfm4.act",
+    "ekfm2.act",
+    "ekfm11.act",
+    "ekfm10.act",
+    "ekfm12.act",
+    "ekfm9.act",
+    "ekfm8.act",
+    "ekfm7.act",
+    "ekfm6.act"
+  ],
+  "easy": {
+    "special": {
+      "N": "QCF_y",
+      "F": "FF_b",
+      "B": "QCB_y",
+      "U": "upper_y",
+      "D": "DD_b",
+      "DF": "GunFirah",
+      "DB": "rocketpunch"
+    },
+    "specialAir": {
+      "N": "QCF_y",
+      "F": "QCF_y",
+      "B": "QCF_b",
+      "U": "QCF_y",
+      "D": "QCF_b"
+    },
+    "ex": {
+      "N": "QCF_xy",
+      "F": "FF_ab",
+      "B": "QCB_xy",
+      "U": "upper_xy",
+      "D": "DD_ab"
+    },
+    "super": {
+      "N": "TripleKFPalm",
+      "F": "Napalm",
+      "B": "SmashKFUpper",
+      "U": "SmashKFUpper",
+      "D": "Gun",
+      "DF": "Crap",
+      "DB": "ShunGoku"
+    }
+  },
+  "combo": {
+    "ranks": {
+      "light": [
+        200,
+        205,
+        230,
+        235,
+        400,
+        430,
+        600,
+        630
+      ],
+      "medium": [
+        210,
+        240,
+        440,
+        610,
+        640
+      ],
+      "heavy": [
+        220,
+        420,
+        620
+      ],
+      "launcher": [
+        410
+      ]
+    },
+    "specialRange": [
+      1000,
+      1999
+    ],
+    "superRange": [
+      3000,
+      4999
+    ],
+    "jumpCancel": [
+      410
+    ],
+    "jump": [
+      40
+    ]
+  },
+  "movelist": {
+    "Specials (E + direction)": [
+      [
+        "Kung Fu Palm",
+        "E",
+        "D, F + Punch"
+      ],
+      [
+        "Kung Fu Knee",
+        "E + Fwd",
+        "F, F + Kick"
+      ],
+      [
+        "Kung Fu Blow",
+        "E + Back",
+        "D, B + Punch"
+      ],
+      [
+        "Kung Fu UpperClaw",
+        "E + Up",
+        "F, D, F + Punch"
+      ],
+      [
+        "Power Stomp",
+        "E + Down",
+        "D, D + Kick"
+      ],
+      [
+        "Kung Fu Gunfire",
+        "E + Down-Fwd",
+        "F, B, F + Punch"
+      ],
+      [
+        "Rocket Grab",
+        "E + Down-Back",
+        "B, D, F + Punch"
+      ],
+      [
+        "Kung Fu Cannonball (air)",
+        "E in the air",
+        "air D, F + Punch/Kick"
+      ],
+      [
+        "EX version (1/3 bar)",
+        "E + Q + direction",
+        "two buttons"
+      ]
+    ],
+    "Supers (Q + direction)": [
+      [
+        "Cheap Palms of Doom",
+        "Q",
+        "D, F, D, F + Punch"
+      ],
+      [
+        "Napalm Vietnam (Lv2)",
+        "Q + Fwd",
+        "D, F, B + Kick"
+      ],
+      [
+        "Kung Fu Wire",
+        "Q + Back / Up",
+        "D, B, D, B + Punch"
+      ],
+      [
+        "Super Bullets",
+        "Q + Down",
+        "D, B, D, F + LP"
+      ],
+      [
+        "???? (Lv3)",
+        "Q + Down-Fwd",
+        "F,D,B,F,D,B + CD"
+      ],
+      [
+        "Shun Goku Satsu (Lv3)",
+        "Q + Down-Back",
+        "F,D,B,F,D,B + LP"
+      ]
+    ],
+    "Buttons": [
+      [
+        "Light Punch / Heavy Punch",
+        "L / ;",
+        "X / Y"
+      ],
+      [
+        "Knockdown Attack (CD)",
+        "'",
+        "Z"
+      ],
+      [
+        "Light Kick / Heavy Kick",
+        ", / .",
+        "A / B"
+      ],
+      [
+        "Emergency Evasion",
+        "/",
+        "C"
+      ],
+      [
+        "Overhead slap / Chainsaw",
+        "Fwd + L / Fwd + ,",
+        ""
+      ],
+      [
+        "Kung Fu Throw",
+        "close, F/B + ;",
+        ""
+      ]
+    ]
+  },
+  "autoCombo": {
+    "medium": "y",
+    "heavy": "z"
+  }
+}
