@@ -2,7 +2,7 @@
 import { CharDef, loadFightFX } from './chardef.js';
 import { Fight, VIEW_W, VIEW_H } from './fight.js';
 import { makeStages } from './stages.js';
-import { MenuInput, keyboard, BTN } from './input.js';
+import { MenuInput, keyboard, BTN, KEYMAPS } from './input.js';
 import { audio, parseSND } from './audio.js';
 import { AnimPlayer } from './air.js';
 import { spriteCanvas, getSprite } from './sff.js';
@@ -29,7 +29,7 @@ function resize() {
 addEventListener('resize', resize); resize();
 
 // ---------------- settings ----------------
-const settings = Object.assign({ difficulty: 4, rounds: 3, time: 99, combo: true, autoCombo: true, easy: true, volume: 8, scanlines: true, music: true }, JSON.parse(localStorage.getItem('fightwire.settings') || '{}'));
+const settings = Object.assign({ difficulty: 4, rounds: 3, time: 99, combo: true, autoCombo: true, uniform: true, easy: true, volume: 8, scanlines: true, music: true }, JSON.parse(localStorage.getItem('fightwire.settings') || '{}'));
 const saveSettings = () => localStorage.setItem('fightwire.settings', JSON.stringify(settings));
 audio.setVolume(settings.volume / 10);
 
@@ -416,6 +416,9 @@ const screens = {
         ['ENGINE', 'Logical Bends · browser MUGEN engine'],
         ['DEE BEE KAW', 'The_None (Most_Mysterious) · voiced by JesusZilla'],
         ['', 'via Logical Bends — see chars/deebeekaw/readme.txt'],
+        ['EVIL KUNG FU MAN', 'The_None (Most_Mysterious) · via Logical Bends'],
+        ['KANAE', 'aokmaniac13 · via Logical Bends'],
+        ['UPPERCUT', 'The_None · via Logical Bends'],
         ['KUNG FU MAN', 'Elecbyte (bundled with Ikemen GO)'],
         ['HIT SPARKS / COMMON SFX', 'Ikemen GO project (data/fightfx, data/common.snd)'],
         ['FORMAT REFERENCE', 'Elecbyte M.U.G.E.N docs · Ikemen GO (MIT)'],
@@ -447,6 +450,8 @@ function optionList() {
     { label: 'ROUND TIMER', value: () => (settings.time ? settings.time + ' SEC' : '∞'), change: cyc('time', [30, 60, 99, 0]) },
     { label: 'COMBO SYSTEM', value: () => (settings.combo ? 'ON' : 'OFF (pure MUGEN)'), change: () => (settings.combo = !settings.combo) },
     { label: 'AUTO COMBO (mash Light)', value: () => (settings.autoCombo ? 'ON' : 'OFF'), change: () => (settings.autoCombo = !settings.autoCombo) },
+    { label: 'UNIFORM RULES', value: () => (settings.uniform ? 'ON (equal damage/stun)' : 'OFF (original)'), change: () => (settings.uniform = !settings.uniform) },
+    { label: 'CONTROLS SETUP', act: () => go('keys', { keys: { side: 0, row: 0, waiting: false } }) },
     { label: 'EASY SPECIALS (E / Q)', value: () => (settings.easy ? 'ON' : 'OFF'), change: () => (settings.easy = !settings.easy) },
     { label: 'VOLUME', value: () => '▮'.repeat(settings.volume) + '▯'.repeat(10 - settings.volume), change: (d) => { settings.volume = Math.max(0, Math.min(10, settings.volume + d)); audio.setVolume(settings.volume / 10); } },
     { label: 'MUSIC', value: () => (settings.music ? 'ON' : 'OFF'), change: () => { settings.music = !settings.music; settings.music ? audio.startMusic('menu') : audio.stopMusic(); } },
@@ -633,7 +638,7 @@ function startFight() {
     fx: app.fx, stage, mode: s.mode === 'training' ? 'training' : 'versus',
     p1: mk(0), p2: mk(1),
     roundsToWin: Math.ceil(settings.rounds / 2), timeSec: s.mode === 'training' ? 0 : settings.time,
-    comboSystem: settings.combo, matchNo: s.arcade ? s.arcade.round + 1 : 1,
+    comboSystem: settings.combo, uniform: settings.uniform, matchNo: s.arcade ? s.arcade.round + 1 : 1,
   });
   for (const c of fight.roots) c.def.profile._easyOff = !settings.easy;
   fight.trainingPower = s.mode === 'training';
@@ -819,7 +824,34 @@ function drawHUD(f) {
     text('TRAINING', tx, 44, { font: MONO(6), align: 'center', color: C.b });
     const lh = f.lastHit;
     if (lh) text(lh.guarded ? 'BLOCKED' : 'HIT', tx, 52, { font: MONO(6), align: 'center', color: lh.guarded ? C.b : C.y });
+    drawInputLog(f.p1);
   }
+}
+
+// Training input display: P1's recent inputs (newest on top), relative to facing.
+const ARROWS = { 0: '·', 1: '↑', 2: '↓', 4: '←', 8: '→', 5: '↖', 9: '↗', 6: '↙', 10: '↘' };
+function drawInputLog(c) {
+  const h = c.cmd?.hist; if (!h || !h.length) return;
+  const rows = [];
+  let prev = null, run = 0;
+  for (let i = h.length - 1; i >= 0 && rows.length < 14; i--) {
+    const e = h[i];
+    const key = e.dir * 1000 + e.btn;
+    if (prev === null || key === prev) { run++; prev = key; continue; }
+    rows.push({ key: prev, run }); prev = key; run = 1;
+  }
+  if (prev !== null && rows.length < 14) rows.push({ key: prev, run });
+  const names = [['x', 8], ['y', 16], ['z', 32], ['a', 1], ['b', 2], ['c', 4]];
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(4, 58, 54, 14 * 9 + 4);
+  rows.forEach((r, i) => {
+    const dir = Math.floor(r.key / 1000), btn = r.key % 1000;
+    const y = 67 + i * 9;
+    text(ARROWS[dir] ?? '·', 8, y, { font: MONO(8), color: C.ink });
+    text(names.filter(([, b]) => btn & b).map(([n]) => n.toUpperCase()).join(''), 20, y, { font: MONO(7), color: C.y });
+    text(String(Math.min(99, r.run)), 55, y, { font: MONO(6), color: C.dim, align: 'right' });
+  });
+  ctx.restore();
 }
 
 function drawMessages(f) {
@@ -883,6 +915,86 @@ function drawMoveList(st) {
   ctx.restore();
 }
 
+// Menus answer to either player's controls (arrows / numpad work too), except where
+// each side drives its own cursor (versus character select) or while rebinding keys.
+function mergeMenuInput(ins) {
+  const own = (app.screen === 'select' && app.sel?.mode === 'versus') || app.screen === 'keys';
+  if (!own) {
+    const a = ins[0], b = ins[1];
+    for (const k of ['up', 'down', 'left', 'right', 'ok', 'back', 'start']) a[k] = a[k] || b[k];
+  }
+  // Enter always confirms and Backspace always goes back in menus
+  if (app.screen !== 'fight' && app.screen !== 'keys') {
+    if (keyboard.latched.has('Enter') || keyboard.latched.has('NumpadEnter')) ins[0].ok = true;
+    if (keyboard.latched.has('Backspace')) ins[0].back = true;
+  }
+  return ins;
+}
+
+// ---------------- key rebinding ----------------
+const BIND_ROWS = [['U', 'Up'], ['D', 'Down'], ['L', 'Left'], ['R', 'Right'], ['x', 'Light (X)'], ['y', 'Medium (Y)'], ['z', 'Heavy (Z)'], ['a', 'A'], ['b', 'B'], ['c', 'C'], ['e', 'Easy special (E)'], ['q', 'Easy super (Q)'], ['s', 'Start / taunt']];
+const DEFAULT_KEYS = JSON.parse(JSON.stringify(KEYMAPS));
+function loadKeys() {
+  try { const saved = JSON.parse(localStorage.getItem('logicalbends.keys') || 'null'); if (saved) for (let p = 0; p < 2; p++) Object.assign(KEYMAPS[p], saved[p]); } catch {}
+}
+function saveKeys() { localStorage.setItem('logicalbends.keys', JSON.stringify(KEYMAPS)); }
+const keyName = (code) => (code || '—').replace(/^Key/, '').replace(/^Digit/, '').replace('Numpad', 'Num ').replace('Arrow', '').replace('Semicolon', ';').replace('Quote', "'").replace('Comma', ',').replace('Period', '.').replace('Slash', '/');
+loadKeys();
+screens.keys = {
+  update(ins) {
+    const k = app.keys ||= { side: 0, row: 0, waiting: false };
+    if (k.waiting) {
+      const code = [...keyboard.latched][0];
+      if (!code) return;
+      if (code === 'Escape') { k.waiting = false; audio.back(); return; }
+      // a key can only do one thing per player: remove it from other actions first
+      const map = KEYMAPS[k.side];
+      for (const [act] of BIND_ROWS) map[act] = (map[act] || []).filter(c => c !== code);
+      map[BIND_ROWS[k.row][0]] = [code];
+      saveKeys(); k.waiting = false; audio.confirm();
+      k.row = Math.min(BIND_ROWS.length + 1, k.row + 1);
+      return;
+    }
+    const i = ins[0], j = ins[1];
+    const up = i.up || j.up, down = i.down || j.down, left = i.left || j.left, right = i.right || j.right;
+    const total = BIND_ROWS.length + 2;
+    if (up) { k.row = (k.row + total - 1) % total; audio.move(); }
+    if (down) { k.row = (k.row + 1) % total; audio.move(); }
+    if (left || right) { k.side ^= 1; audio.move(); }
+    const ok = keyboard.latched.has('Enter') || keyboard.latched.has('NumpadEnter');
+    if (ok) {
+      if (k.row < BIND_ROWS.length) { k.waiting = true; keyboard.latched.clear(); audio.confirm(); }
+      else if (k.row === BIND_ROWS.length) { Object.assign(KEYMAPS[k.side], JSON.parse(JSON.stringify(DEFAULT_KEYS[k.side]))); saveKeys(); audio.confirm(); }
+      else { audio.back(); go('options', { optIndex: 0 }); }
+    }
+    if (ins.esc || keyboard.latched.has('Backspace')) { audio.back(); go('options', { optIndex: 0 }); }
+  },
+  draw() {
+    const k = app.keys ||= { side: 0, row: 0, waiting: false };
+    wireBackdrop(app.t);
+    text('CONTROLS SETUP', 20, 26, { size: 15, color: C.y, stroke: 3 });
+    text('◀ ▶ switch player · Enter: rebind · Esc: back', VIEW_W - 14, 26, { font: MONO(6.5), color: C.ink, align: 'right' });
+    ['PLAYER 1', 'PLAYER 2'].forEach((t, s) => { if (s === k.side) para(196 + s * 110, 33, 100, 12, 3, s ? '#3ad6ff' : C.y); text(t, 206 + s * 110, 42, { size: 8, color: s === k.side ? '#111' : C.ink }); });
+    BIND_ROWS.forEach(([act, label], r) => {
+      const y = 58 + r * 12.5, sel = r === k.row;
+      if (sel) para(14, y - 9, 400, 11.5, 3, 'rgba(0,10,40,0.75)');
+      text(label, 22, y, { font: MONO(7), color: sel ? C.y : C.ink });
+      for (let s = 0; s < 2; s++) {
+        const waiting = k.waiting && sel && s === k.side;
+        const v = waiting ? ((app.t >> 4) % 2 ? 'PRESS A KEY…' : '') : (KEYMAPS[s][act] || []).map(keyName).join(' / ');
+        text(v, 206 + s * 110, y, { font: MONO(7), color: waiting ? C.y : (s === k.side ? C.ink : C.dim) });
+      }
+    });
+    const yr = 58 + BIND_ROWS.length * 12.5;
+    [['RESET THIS PLAYER TO DEFAULTS', BIND_ROWS.length], ['BACK', BIND_ROWS.length + 1]].forEach(([t, r], n) => {
+      const y = yr + n * 12.5 + 2;
+      if (k.row === r) para(14, y - 9, 400, 11.5, 3, 'rgba(0,10,40,0.75)');
+      text(t, 22, y, { font: MONO(7), color: k.row === r ? C.y : C.ink });
+    });
+    text('Gamepads: D-pad/stick move · X Y RB = Light Med Heavy · A B RT = A B C · LB = E · LT = Q · Start', VIEW_W / 2, VIEW_H - 5, { font: MONO(6), color: C.ink, align: 'center' });
+  },
+};
+
 // ---------------- main loop ----------------
 let last = performance.now();
 const STEP = 1000 / 60;
@@ -891,7 +1003,7 @@ function frame(now) {
   last = now;
   while (accum >= STEP) {
     accum -= STEP;
-    const ins = menuIn.poll();
+    const ins = mergeMenuInput(menuIn.poll());
     app.t++;
     screens[app.screen].update(ins);
     keyboard.latched.clear();
@@ -922,7 +1034,7 @@ window.fwDebug = {
   step(n = 1, keys = null) {
     for (let i = 0; i < n; i++) {
       if (keys) for (const k of keys) keyboard.latched.add(k);
-      const ins = menuIn.poll(); app.t++; screens[app.screen].update(ins); keyboard.latched.clear();
+      const ins = mergeMenuInput(menuIn.poll()); app.t++; screens[app.screen].update(ins); keyboard.latched.clear();
     }
     ctx.setTransform(SC, 0, 0, SC, 0, 0); screens[app.screen].draw();
   },

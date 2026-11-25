@@ -9,9 +9,9 @@ combo layer on top.
 Browsers block ES modules from `file://`, so serve the folder over http:
 
 ```
-python -m http.server 8417
+python serve.py
 ```
-then open http://localhost:8417 (hard refresh with Ctrl+F5 after code changes).
+then open http://localhost:8417. (`serve.py` is `http.server` with caching turned off, so a normal reload always picks up code changes.)
 
 ## Layout
 | Path | What it is |
@@ -29,12 +29,13 @@ then open http://localhost:8417 (hard refresh with Ctrl+F5 after code changes).
 | `data/common1.cns` | Our own common states (stand/walk/jump/guard/get-hit/etc.) |
 | `data/fightfx.*`, `data/common.snd` | Hit sparks and common sounds (from Ikemen GO) |
 | `chars/roster.json` | Which character folders appear on the select screen |
-| `chars/<name>/fightwire.json` | Per-character profile: def file, palette order, easy-input map (E/Q + direction), combo ranks (light/medium/heavy/launcher state numbers), auto-combo route, move list, AI hook |
+| `chars/<name>/fightwire.json` | Per-character profile: def file, palette order, easy-input map (E/Q + direction), combo ranks (light/medium/heavy/launcher state numbers), auto-combo route, move list, AI hook (`aiVar`), files to skip (`skipSt`) |
 
 ## Engine notes
 - First definition of a statedef wins: cmd → st → st0..st9 → cns → `data/common1.cns`.
 - Easy inputs force the character's own CMD command names (see `easy` in the profile), so the character's real `[Statedef -1]` logic still decides if the move can come out.
 - Combo system: during a contact window the engine temporarily grants `ctrl` while running `[Statedef -1]` and filters ChangeStates by rank (light < medium < heavy < special < super). Launcher = crouching heavy; jump-cancel → super jump.
+- Uniform rules (Options, on by default): every character's normals are scaled to the same damage per strength (from the median of their own HitDefs), get a minimum hitstun/blockstun/hitpause per strength, and life/meter/attack/defence are standardized.
 - CPU: characters with their own AI use `ailevel` (DBK) or `aiVar` (sets a var directly, EKFM). Others use the generic bot in `Fight.botThink`.
 
 ## Adding a character
@@ -44,8 +45,9 @@ then open http://localhost:8417 (hard refresh with Ctrl+F5 after code changes).
 
 ## Controls (P1)
 WASD move · L ; ' = X Y Z · , . / = A B C · E + dir = special · Q + dir = super · E+Q = EX · Enter = taunt · Esc = pause.
+All keys can be rebound in Options → Controls Setup (saved in the browser). Menus also accept arrows, Enter and Backspace.
 P2: arrows · Num 4 5 6 / 1 2 3 · Num 7 / 9 · Num Enter.
 
 ## Credits
-Dee Bee Kaw and Evil Kung Fu Man by The_None (via Logical Bends). Kung Fu Man by Elecbyte.
+Dee Bee Kaw and Evil Kung Fu Man by The_None, Uppercut by The_None, Kanae by aokmaniac13 (all via Logical Bends). Kung Fu Man by Elecbyte.
 Hit sparks/common sounds from Ikemen GO. Character files keep their own readmes.

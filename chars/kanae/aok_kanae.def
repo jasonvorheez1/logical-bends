@@ -1,0 +1,45 @@
+; Definition file for Kanae
+; Contains all the filenames needed for the character
+
+; Player information
+[Info]
+name = "Kanae"        ;Name of character
+displayname = "Kanae" ;Name of character to display
+versiondate = 10,15,2009    ;Version date of character (MM-DD-YYYY)
+mugenversion = 04,14,2002   ;Version of M.U.G.E.N character works on
+author = "aokmaniac13"         ;Character author name
+pal.defaults = 1,6,8,4,5,2      ;Default palettes in order of preference
+localcoords = 320x240
+
+; Files for the player
+[Files]
+cmd     = kanae.cmd   ;Command set
+cns     = kanae.cns   ;Constants
+st      = kanae.st   ;States
+st1	= kanae_special.st
+st2	= kanae_super.st
+st3	= kanae_system.st
+st4	= ai.st
+st5	= kanae_override.st ;Comment this out if using mugen 1.0
+stcommon = common1.cns ;Common states
+sprite  = kanae.sff   ;Sprite
+anim    = kanae.air   ;Animation
+sound   = kanae.snd   ;Sound
+pal1    = Palettes/kanae1.act
+pal2	= Palettes/heyg.act
+pal3	= Palettes/STARS.act
+pal4	= Palettes/Heidern.act
+pal5	= Palettes/GREEN.act
+pal6	= Palettes/kanae6.act
+pal7	= Palettes/guard.act
+pal8	= Palettes/SionPurple.act
+pal9	= Palettes/Mgbenz.act
+pal10	= Palettes/kiri-Heat.act
+pal11	= Palettes/kiri-Luka.act
+pal12	= Palettes/Mango.act
+
+
+; Arcade mode
+[Arcade]
+intro.storyboard = 
+ending.storyboard = 

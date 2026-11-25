@@ -1,0 +1,45 @@
+{
+  "def": "uppercut.def",
+  "tagline": "A punch, personified. Mostly upward.",
+  "nativeAI": true,
+  "aiVar": { "var": 58, "value": 1 },
+  "palettes": ["pal1.act", "thanos.act", "balrog.act", "tager.act", "leona.act", "albiole.act"],
+  "easy": {
+    "special": { "N": "QCF_y", "F": "HCF_y", "B": "QCB_y", "U": "upper_y", "D": "tap_y" },
+    "ex": { "N": "QCF_xy", "F": "HCF_xy", "B": "QCB_xy", "U": "upper_xy", "D": "tap_x" },
+    "super": { "N": "ChainDrive", "F": "ChainDrive", "B": "SmashKFUpper", "U": "SmashKFUpper", "D": "Dio" }
+  },
+  "autoCombo": { "medium": "y" },
+  "combo": {
+    "ranks": {
+      "light": [200, 400, 600],
+      "medium": [210, 610],
+      "heavy": [620],
+      "launcher": [410]
+    },
+    "specialRange": [1000, 1999],
+    "superRange": [3000, 3999],
+    "jumpCancel": [410],
+    "jump": [40]
+  },
+  "movelist": {
+    "Specials (E + direction)": [
+      ["HA! OK NUDE", "E", "QCF + X/Y"],
+      ["UP PHRASED", "E + Fwd", "HCF + X/Y"],
+      ["NEW, VACUOUS WEAR", "E + Back", "QCB + X/Y"],
+      ["SURE HONKY", "E + Up", "F, D, DF + X/Y"],
+      ["LUNCH CUP VAN", "E + Down", "Y, Y, Y"],
+      ["X+Y version", "E + Q + direction", "X+Y"]
+    ],
+    "Hypers (Q + direction)": [
+      ["INVADE RICH", "Q / Q + Fwd", "QCF x2 + X/Y"],
+      ["PURGE UP FUNK", "Q + Back / Up", "QCB x2 + X/Y"],
+      ["INTONATE DEATHFUL INDIGNITY (Lv2)", "Q + Down", "QCF x2 + X+Y"],
+      ["OUCH! PRENATAL", "while guarding, X+Y", ""]
+    ],
+    "Buttons": [
+      ["Light / Hard attack", "L / ;", "X / Y"],
+      ["Throw / unique attack", "' (Z)", "X+Y"]
+    ]
+  }
+}

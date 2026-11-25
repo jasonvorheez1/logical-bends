@@ -1,0 +1,127 @@
+====================================================================
+---------------  Character: Kanae                    ---------------
+---------------  Author: aokmaniac13                 ---------------
+---------------  Date: November 21, 2009             ---------------
+---------------  Version: 1.4                        ---------------
+---------------  Website: www.justnopoint.com/lbends ---------------
+====================================================================
+
+Release notes:
+Do not include kanae_override.st in the DEF if using mugen 1.0
+If you know someone who's handy with particle effects, I could use the help.  Kanae's throws need tornado effects!
+
+Changelog:
+*November 21, 2009*
+- Added guard sparks
+- Miscellaneous fixes
+- Fixed reflect guard vs. projectiles?
+
+*October 15, 2009*
+- Finally fixed the throw bugs!
+- Fixed statetypesets that were not functioning.
+- Forward+C now jumps over low attacks as it should.
+- The AI should be pretty good now.
+
+*October 8, 2009*
+- AI is competent!
+- Fixed some rare throw bugs, though I doubt that's the end of it.
+
+*October 6, 2009*
+- Cobbled together a shitty AI.
+- Added missing dust effects on throws.
+
+*October 3, 2009*
+- Fixed another throw bug in the corner.
+- Fixed Kanae's dizzy animation.
+- Added more mugen 1.0 specific contstants.
+- Separate ST file for mugen 1.0
+
+*October 3, 2009*
+- Fixed excessive air hitimes.
+- Added recovery system.
+- Optimized and finalized SFF file.
+- Changed the movelist to make sense.
+- Adjusted Cornerpush.
+- Removed effect shadows.
+- Kanae version 1.0 Released!
+
+*October 2, 2009*
+- Fixed a bug that allowed Kanae to get guaranteed throws.
+- Fixed some debug flood issues.
+
+*October 1, 2009*
+- Added more missing effects
+- Fixed backdash, added dust effect.
+- Added missing envshakes.
+- Fixed small portrait.
+- Tweaked her QCF throw to properly throw people in the corner.
+- Fixed her level 3 from gaining power.
+
+*September 20, 2009*
+- MOAR SUPERS
+- Fixed a major bug that caused Kanae's attacks to do next to no damage when the enemy has low life.
+
+*September 3, 2009*
+- ANOTHER SUPER!
+
+*July 13, 2009*
+- Reflector in, effects missing :/
+
+*June ?, 2009*
+- Super moves!
+
+*June 11, 2009*
+- Sounds!
+- Intro!
+- Winposes!
+- Counterhits!
+
+*May 24, 2009*
+- I added more stuff.
+
+*May 23, 2009*
+- Oh shit it's a character what do I do what do I do what do I do what do I do what do I do what do I do what do I do what do I do what do I do 
+
+
+Moves:
+
+X/Y/Z       - Recovery Roll (At the end of a fall)
+
+F + Z       - Double Palm Strike
+DF + Z      - Roll
+(Air) D + Z - Boob Splash
+
+X+Y         - Throw
+F/B + X+Y   - Spin Throw
+(Air) X+Y   - Air Throw
+
+Y+Z         - Reflector
+
+QCF + X/Y/Z - Command Throw
+QCB + X     - Anti Air Counter
+QCB + Y     - High Counter
+QCB + Z     - Low Counter
+D,D + X/Y/Z - Anti-Air Throw
+
+QCB + Y+Z   - Super Counter  (One Stock)
+D,D + Y+Z   - Anti-Air Super (One Stock)
+
+QCF + Y+Z   - Super Throw    (One Stock)
+> D,D + Y+Z - Followup       (One Stock)
+>> X+Y+Z(B) - JUSTICE        (One Stock)
+
+
+Credits:
+
+Subtle Style - Made Akatsuki Blitzkampf
+Artmoney - Velocities etc.
+Mauve - Framedisplay tool <3
+Mauve again - Spoon feeding me everything
+Winane - AI activation code (still works in 1.0!)
+Sion - I'm pretty sure you helped somewhere.  (I want to believe)
+Whoever wrote the info on damage scaling on akatsuki.mizuumi.net
+Vans - Counter hit system, feedback, last minute RAGE.
+PotS - Useful code snippets.
+[E] - Color separation, code for looping states.
+Anyone who made palettes. (A lot of people!)
+People who tested this and gave feedback.

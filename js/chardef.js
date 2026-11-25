@@ -92,6 +92,9 @@ export class CharDef {
     if (files.st) stFiles.push(files.st);
     for (let i = 0; i <= 9; i++) if (files['st' + i]) stFiles.push(files['st' + i]);
     if (files.cns && !stFiles.includes(files.cns)) stFiles.push(files.cns);
+    // profile can drop files meant for other MUGEN versions (e.g. WinMUGEN-only overrides)
+    const skip = (cd.profile.skipSt || []).map(s => s.toLowerCase());
+    for (let i = stFiles.length - 1; i >= 0; i--) if (skip.includes(stFiles[i].toLowerCase())) stFiles.splice(i, 1);
     const states = new Map();
     const texts = {};
     for (const f of stFiles) {
@@ -134,12 +137,30 @@ export class CharDef {
       }
     }
     if (!cd.palettes.length && cd.sff.defaultPal) cd.palettes.push({ file: 'sff', pal: cd.sff.defaultPal });
+    cd.rankDamage = medianRankDamage(cd);
     onProgress('Ready', 1);
     return cd;
   }
   getState(no) {
     return this.states.get(no) || this.common.get(no) || null;
   }
+}
+
+// Median HitDef damage of each combo rank (light/medium/heavy/launcher), used by the uniform rules
+// to bring characters with very different damage tables onto the same scale.
+function medianRankDamage(cd) {
+  const out = {};
+  const ranks = cd.profile?.combo?.ranks || {};
+  for (const [rk, list] of Object.entries(ranks)) {
+    const vals = [];
+    for (const no of list) {
+      const st = cd.states.get(no);
+      if (!st) continue;
+      for (const ct of st.ctrls) if (ct.type === 'hitdef') { const v = parseFloat((ct.params.damage || '').split(',')[0]); if (v > 0) vals.push(v); }
+    }
+    if (vals.length) { vals.sort((a, b) => a - b); out[rk] = vals[Math.floor(vals.length / 2)]; }
+  }
+  return out;
 }
 
 export async function loadFightFX() {

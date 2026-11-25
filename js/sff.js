@@ -114,10 +114,18 @@ function loadV1(d) {
       if (i === 0) {
         if (hasPal) defaultPal = palFromRGB(d, po);
         curPal = null;
+        spr.pal = null;
       } else if (!samePal) {
-        curPal = hasPal ? palFromRGB(d, po) : null;
+        const own = hasPal ? palFromRGB(d, po) : null;
+        // Portraits / UI art (group 9000+) keep their own colours but never start a palette
+        // chain: body sprites that follow them must still use the selected character palette.
+        // An own palette identical to the character's default is also just the character palette.
+        const isDefault = own && defaultPal && own.every((v, k) => k === 0 || v === defaultPal[k]);
+        spr.pal = isDefault ? null : own;
+        if (spr.group < 9000) curPal = isDefault ? null : own;
+      } else {
+        spr.pal = curPal;
       }
-      spr.pal = curPal;
       spr.w = rd16(d, dataOff + 8) - rd16(d, dataOff + 4) + 1;
       spr.h = rd16(d, dataOff + 10) - rd16(d, dataOff + 6) + 1;
       spr.decoder = async () => decodePCX(d, dataOff, len, spr);

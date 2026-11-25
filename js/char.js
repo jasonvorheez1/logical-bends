@@ -173,6 +173,9 @@ export class Char {
     switch (key) {
       case 'fall.xvel': return isNaN(g['fall.xvel']) ? this.vel.x : g['fall.xvel'];
       case 'hitshaketime': return Math.max(0, this.pauseTime);
+      // Like MUGEN, the hit's damage is only reported right after the hit lands, so meters
+      // that "add damage while gethitvar(damage)" count each hit once instead of every tick.
+      case 'damage': return this.fight.gameTime - (g.damageTick ?? -99) <= 1 ? g.damage : 0;
       case 'fall': return g.fall ? 1 : 0;
       case 'fall.recover': return g['fall.recover'] ? 1 : 0;
       case 'guarded': return g.guarded ? 1 : 0;
@@ -341,6 +344,10 @@ export class Char {
   actionRun() {
     if (this.destroyed) return;
     this.resetTick();
+    // Safety: never stay stuck in an opponent's custom state once idle / back in control
+    if (this.stateOwner !== this && !this.isHelper && (this.ctrl || (this.movetype !== 'H' && [0, 11, 20, 52].includes(this.stateNo)))) {
+      this.stateOwner = this;
+    }
     const paused = this.pauseTime > 0;
     const ownDef = this.def;
     this._changeCount = 0;
@@ -927,7 +934,8 @@ T('lose', 'i', c => (c.fight.winnerSide && c.fight.winnerSide !== c.teamSide && 
 T('loseko', 'i', c => (c.fight.winnerSide && c.fight.winnerSide !== c.teamSide && c.fight.winType === 'ko' ? 1 : 0));
 T('losetime', 'i', c => (c.fight.winnerSide && c.fight.winnerSide !== c.teamSide && c.fight.winType === 'time' ? 1 : 0));
 T('drawgame', 'i', c => (c.fight.winnerSide === 3 ? 1 : 0));
-T('ishometeam', 'i', c => (c.teamSide === 1 ? 1 : 0)); T('teamside', 'i', c => c.teamSide);
+// Like MUGEN arcade: the CPU-controlled side is the "home team" (some AIs key off this).
+T('ishometeam', 'i', c => (c.root.ai ? 1 : 0)); T('teamside', 'i', c => c.teamSide);
 T('movecontact', 'i', c => c.moveContact); T('movehit', 'i', c => c.moveHit);
 T('moveguarded', 'i', c => c.moveGuarded); T('movereversed', 'i', c => c.moveReversed);
 T('hitcount', 'i', c => c.hitCount); T('uniqhitcount', 'i', c => c.uniqHitCount);

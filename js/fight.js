@@ -10,6 +10,14 @@ const num = v => (typeof v === 'number' ? v : (v ? 1 : 0));
 
 export const VIEW_W = 427, VIEW_H = 240, GROUND_Y = 214;
 
+// Uniform rules per attack strength: target damage, minimum hitstun / blockstun, minimum hitpause.
+const UNIFORM = {
+  light: { dmg: 25, stun: 14, block: 10, pause: 7 },
+  medium: { dmg: 60, stun: 17, block: 13, pause: 9 },
+  heavy: { dmg: 80, stun: 20, block: 15, pause: 11 },
+  launcher: { dmg: 60, stun: 22, block: 15, pause: 11 },
+};
+
 // --- param helpers for explods/projectiles (mirror of char.js helpers) ---
 function P(ct, key, c, i = 0, def = 0) {
   ct.pc ||= {};
@@ -51,6 +59,7 @@ export class Fight {
     this.training = this.mode === 'training';
     this.trainingInfiniteLife = true;
     this.comboSystem = opts.comboSystem !== false;
+    this.uniform = opts.uniform !== false;
     this.viewW = VIEW_W; this.viewH = VIEW_H; this.groundY = GROUND_Y;
     this.stageLeft = -420; this.stageRight = 420;
     this.camX = 0; this.camY = 0;
@@ -129,6 +138,7 @@ export class Fight {
     this.pause = null; this.shake = null; this.envColor = null; this.allPalFX = null;
     for (const c of this.roots) {
       c.helpers = []; c.children = []; c.targets = [];
+      if (this.uniform) { c.lifeMax = 1000; c.powerMax = 3000; }
       c.life = c.lifeMax;
       if (first) c.power = this.training ? c.powerMax : 0;
       c.pos.x = c.teamSide === 1 ? -70 : 70; c.pos.y = 0;
@@ -473,6 +483,8 @@ export class Fight {
       if (!sliding) e.vel.x *= fr;
       if (Math.abs(e.vel.x) < 0.01) e.vel.x = 0;
       if (e.pos.y > 0) e.pos.y = 0;
+      // Safety: basic stand / crouch / walk states are always on the floor
+      if (e.pos.y < 0 && !e.isHelper && !e.bindTo && [0, 10, 11, 12, 20].includes(e.stateNo)) { e.pos.y = 0; e.vel.y = 0; }
     } else if (e.physics === 'A') {
       e.vel.y += k['movement.yaccel'];
       if (e.pos.y >= 0 && e.vel.y > 0 && e.movetype !== 'H' && !e.isHelper) {
@@ -615,10 +627,21 @@ export class Fight {
       hd = { ...hd, groundType: 1, airType: 1, p2stateno: null, groundVel: [-1.2, -10.5], airVel: [-1.2, -10.5], fall: 1, airFall: 1, animtype: 4, airAnimtype: 4, fallAnimtype: 4, groundHit: 28, airHit: 28, yaccel: 0.42, fallRecover: 0 };
       atkRoot.combo.launched = true;
     }
+    // Uniform rules: same damage scale and minimum hitstun per strength for every character
+    const rank = !proj && a === atkRoot && atkRoot.rankOf ? atkRoot.rankOf(a.stateNo) : null;
+    let uniScale = 1;
+    if (this.uniform && rank && UNIFORM[rank]) {
+      const U = UNIFORM[rank];
+      const med = atkRoot.def.rankDamage?.[rank];
+      if (med) uniScale = Math.max(0.6, Math.min(1.6, U.dmg / med));
+      if (!hd.p2stateno) hd = { ...hd, groundHit: Math.max(hd.groundHit, U.stun), groundSlide: Math.max(hd.groundSlide, U.stun - 2), airHit: Math.max(hd.airHit, U.stun + 4), guardHit: Math.max(hd.guardHit, U.block), guardSlide: Math.max(hd.guardSlide, U.block - 2), guardCtrl: Math.max(hd.guardCtrl, U.block - 2), pauseP2: Math.max(hd.pauseP2, U.pause), pauseP1: Math.max(hd.pauseP1, U.pause - 1) };
+    }
     // damage
-    const atkMul = (proj ? proj.attackMul : a.attackMul) * (atkRoot.constant('data.attack') / 100);
-    const defMul = d.defenceMul * (d.root.constant('data.defence') / 100);
-    let dmg = Math.round((guarded ? hd.guardDamage : hd.damage) * atkMul / defMul);
+    const statAtk = this.uniform ? 1 : atkRoot.constant('data.attack') / 100;
+    const statDef = this.uniform ? 1 : d.root.constant('data.defence') / 100;
+    const atkMul = (proj ? proj.attackMul : a.attackMul) * statAtk;
+    const defMul = d.defenceMul * statDef;
+    let dmg = Math.round((guarded ? hd.guardDamage : hd.damage) * uniScale * atkMul / defMul);
     const combo = this.combos[a.teamSide];
     if (!guarded && wasHit && this.comboSystem && combo.hits >= 2) {
       dmg = Math.round(dmg * Math.max(0.3, 1 - 0.08 * (combo.hits - 1)));
@@ -632,7 +655,7 @@ export class Fight {
     const prevFall = wasHit && g.fall;
     const prevHitCount = wasHit ? g.hitcount : 0;
     Object.assign(g, d.blankGHV());
-    g.damage = dmg; g.guarded = guarded ? 1 : 0;
+    g.damage = dmg; g.damageTick = this.gameTime; g.guarded = guarded ? 1 : 0;
     g.hitcount = prevHitCount + 1;
     g.attr = hd.attr; g.id = a.playerId; g.playerno = a.teamSide; g.hitid = hd.id; g.chainid = hd.chainid; g.chainidLast = hd.id;
     g.groundtype = hd.groundType; g.airtype = hd.airType;
