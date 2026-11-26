@@ -1,0 +1,2 @@
+chars/realpolicedude/RealPoliceDude.snd filter=lfs diff=lfs merge=lfs -text
+chars/realpolicedude/RealPoliceDude.sff filter=lfs diff=lfs merge=lfs -text

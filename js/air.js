@@ -113,7 +113,7 @@ export class AnimPlayer {
     const a = this.anim;
     if (!a || !a.frames.length) return;
     const f = a.frames[this.elem];
-    if (f.time < 0) { this.time++; return; }
+    if (f.time < 0) { this.elemTime++; this.time++; return; }
     this.elemTime++;
     this.time++;
     if (this.elemTime >= f.time) {
@@ -132,7 +132,12 @@ export class AnimPlayer {
       }
     }
   }
-  // MUGEN AnimTime: ticks relative to the end of the animation (0 on its final tick)
+  // At the loop boundary the sprite has wrapped, but triggers still see the completed duration.
+  triggerTime() {
+    const a = this.anim;
+    if (this.loops && this.time === a.starts[a.loopStart]) return a.total;
+    return this.time;
+  }
   animTime() {
     const a = this.anim;
     if (!a) return 0;
@@ -141,14 +146,14 @@ export class AnimPlayer {
       if (f && f.time < 0) return 0;
       return this.time - a.total;
     }
-    return this.time + 1 - a.total;
+    return this.triggerTime() - a.total;
   }
   elemNo() { return this.elem + 1; }
   // Ticks since element n (1-based) started; negative if not reached yet in this loop.
   elemTimeOf(n) {
     const a = this.anim;
     if (!a || n < 1 || n > a.frames.length) return -99999;
-    return this.time - a.starts[n - 1];
+    return this.triggerTime() - a.starts[n - 1];
   }
   elemNoAt(t) {
     const a = this.anim;
@@ -159,6 +164,6 @@ export class AnimPlayer {
   }
   // true on the first tick of element n
   elemStarted(n) {
-    return this.elem + 1 === n && this.elemTime === 0;
+    return this.elem + 1 === n && this.elemTimeOf(n) === 0;
   }
 }

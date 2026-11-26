@@ -1,5 +1,5 @@
 // FIGHTWIRE — match runtime: tick loop, hit resolution, effects, camera, rounds, rendering.
-import { Char } from './char.js';
+import { Char, parseAttr, attrMatches } from './char.js';
 import { AnimPlayer } from './air.js';
 import { spriteCanvas, getSprite } from './sff.js';
 import { readRaw, DIR, BTN } from './input.js';
@@ -146,7 +146,7 @@ export class Fight {
       c.vel.x = c.vel.y = 0;
       c.facing = c.teamSide === 1 ? 1 : -1;
       c.pauseTime = 0; c.hitdef = null; c.palfx = null; c.afterimage = null;
-      c.notHitBy = [null, null]; c.hitBy = [null, null]; c.hitOverride = [];
+      c.hitBy = [null, null]; c.hitOverride = [];
       c.attackMul = 1; c.defenceMul = 1;
       c.stateOwner = c; c.bindTo = null; c.angle = 0;
       c.ghv = c.blankGHV();
@@ -299,6 +299,7 @@ export class Fight {
       // FIGHTWIRE easy inputs: E + dir = special, Q + dir = super, E+Q = EX special
       const pressed = btn & ~prevBtn;
       const easy = !c.def.profile?._easyOff && c.def.profile?.easy;
+      c.easyJumpCancel = false;
       if (easy && (pressed & (BTN.e | BTN.q))) {
         const key = dirKey(dirBits);
         const both = (btn & BTN.e) && (btn & BTN.q);
@@ -307,7 +308,11 @@ export class Fight {
         else if (pressed & BTN.q) table = c.statetype === 'A' && easy.superAir ? easy.superAir : easy.super;
         else table = c.statetype === 'A' && easy.specialAir ? easy.specialAir : easy.special;
         const name = pickEasy(table, key);
-        if (name) for (const n of [].concat(name)) c.cmd.force(n, 6);
+        if (name) {
+          for (const n of [].concat(name)) c.cmd.force(n, 6);
+          c.easyJumpCancel = c.human && !!(dirBits & DIR.U) && c.stateNo === 40 &&
+            c.statetype === 'S' && c.stateOwner === c;
+        }
       }
       // FIGHTWIRE auto combo: mashing Light advances Light → Medium → Heavy → Special → Super
       if (this.autoCombo && c.human && (pressed & BTN.x)) this.autoComboStep(c, dirBits);
@@ -398,7 +403,10 @@ export class Fight {
     // slot set by state code is still active during this tick's hit detection.
     for (const e of list) {
       if (e.destroyed || frozen(e) || e.pauseTime > 0) continue;
-      for (const arr of [e.notHitBy, e.hitBy]) for (let i = 0; i < 2; i++) if (arr[i] && arr[i].time >= 0 && --arr[i].time <= 0) arr[i] = null;
+      for (let i = 0; i < e.hitBy.length; i++) {
+        const slot = e.hitBy[i];
+        if (slot && slot.time > 0 && --slot.time === 0) e.hitBy[i] = null;
+      }
       e.hitOverride = e.hitOverride.map(h => (h && h.time !== -1 && --h.time <= 0 ? null : h));
     }
     // state processing
@@ -520,7 +528,7 @@ export class Fight {
     if (!f) return null;
     const list = kind === 1 ? f.clsn1 : f.clsn2;
     if (!list || !list.length) return null;
-    const xs = e.root.def.consts['size.xscale'] || 1, ys = e.root.def.consts['size.yscale'] || 1;
+    const xs = e.xscale, ys = e.yscale;
     return list.map(([x1, y1, x2, y2]) => (e.facing > 0
       ? [e.pos.x + x1 * xs, e.pos.y + y1 * ys, e.pos.x + x2 * xs, e.pos.y + y2 * ys]
       : [e.pos.x - x2 * xs, e.pos.y + y1 * ys, e.pos.x - x1 * xs, e.pos.y + y2 * ys]));
@@ -539,8 +547,9 @@ export class Fight {
     if (aff === 'f' && enemy) return false;
     if (hd.hitTargets.has(def)) return false;
     // nothitby / hitby
-    for (const s of def.notHitBy) if (s && attrMatches(s.attr, hd.attr)) return false;
-    if (def.hitBy.some(Boolean) && !def.hitBy.some(s => s && attrMatches(s.attr, hd.attr))) return false;
+    for (const slot of def.hitBy) {
+      if (slot && attrMatches(slot.attr, hd.attr) === slot.exclude) return false;
+    }
     // throws can't hit someone already being thrown / in custom state of another
     if (def.stateOwner !== def && def.stateOwner.root !== att.root) return false;
     // hitflag
@@ -597,7 +606,7 @@ export class Fight {
       for (const a of attackers) {
         const ah = a.hitdef;
         if (a === r || a.teamSide === r.teamSide || !ah || !ah.active || ah.reversal) continue;
-        if (!attrMatches(rh.reversalAttr, ah.attr)) continue;
+        if (!attrMatches(parseAttr(rh.reversalAttr), ah.attr)) continue;
         const c1b = this.boxes(a, 1); if (!c1b || !this.overlap(c1, c1b)) continue;
         ah.active = false; rh.active = false;
         r.moveReversed = 1; r.moveContact = 1;
@@ -637,7 +646,7 @@ export class Fight {
     let hd = hd0;
     hd0.hitTargets.add(d);
     // hit override
-    const ovr = d.hitOverride.find(o => o && attrMatches(o.attr, hd.attr));
+    const ovr = d.hitOverride.find(o => o && attrMatches(parseAttr(o.attr), hd.attr));
     let guarded = !ovr && this.isGuarding(d, hd);
     const inAir = d.statetype === 'A';
     const wasHit = d.movetype === 'H';
@@ -1177,7 +1186,7 @@ export class Fight {
     // Animation data may come from another character (ChangeAnim2), but sprites are always our own.
     const owner = e.root.def;
     const pi = this.palFor(e, owner);
-    const xs = e.root.def.consts['size.xscale'] || 1, ys = e.root.def.consts['size.yscale'] || 1;
+    const xs = e.xscale, ys = e.yscale;
     // afterimages
     if (e.afterHist.length && e.afterimage) {
       const ai = e.afterimage;
@@ -1210,12 +1219,12 @@ export class Fight {
     if (!cv) return;
     const sh = shadowCanvas(cv);
     const [sx, sy] = this.toScreen(e.pos.x, 0);
-    const xs = e.root.def.consts['size.xscale'] || 1;
+    const xs = e.xscale;
     const lift = Math.min(1, Math.max(0.25, 1 + e.pos.y / 200));
     g.save();
     g.globalAlpha = 0.32 * lift;
-    g.translate(sx + f.x * e.facing, sy + (this.stage?.shadowY || 0));
-    g.scale(((e.facing < 0) !== f.hflip ? -1 : 1) * xs, -0.28);
+    g.translate(sx + f.x * e.facing * xs, sy + (this.stage?.shadowY || 0));
+    g.scale(((e.facing < 0) !== f.hflip ? -1 : 1) * xs, -0.28 * e.yscale);
     g.drawImage(sh, -spr.x, -spr.y + f.y);
     g.restore();
   }
@@ -1245,16 +1254,6 @@ export class Fight {
     }
     for (const p of this.projs) draw(this.projBoxes(p, 1), 'rgba(255,60,60,1)');
   }
-}
-
-function attrMatches(slotAttr, hitAttr) {
-  const sl = (slotAttr || '').toUpperCase().split(',').map(t => t.trim());
-  const st = hitAttr.st;
-  if (!st.split('').some(ch => (sl[0] || '').includes(ch))) return false;
-  const types = sl.slice(1).filter(Boolean);
-  if (!types.length) return true;
-  const ht = hitAttr.types[0] || 'NA';
-  return types.some(t => (t[0] === 'A' || t[0] === ht[0]) && (t[1] === 'A' || t[1] === ht[1]));
 }
 
 function dirKey(bits) {

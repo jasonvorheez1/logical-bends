@@ -419,7 +419,8 @@ const screens = {
         ['EVIL KUNG FU MAN', 'The_None (Most_Mysterious) · via Logical Bends'],
         ['KANAE', 'aokmaniac13 · via Logical Bends'],
         ['UPPERCUT', 'The_None · via Logical Bends'],
-        ['BUSTER', 'Brergrsart'],
+        ['BUSTER / REAL POLICE DUDE', 'Brergrsart'],
+        ['NOSTALGIC BALLZ', 'AdamLexus (former: SSkye)'],
         ['KUNG FU MAN', 'Elecbyte (bundled with Ikemen GO)'],
         ['HIT SPARKS / COMMON SFX', 'Ikemen GO project (data/fightfx, data/common.snd)'],
         ['FORMAT REFERENCE', 'Elecbyte M.U.G.E.N docs · Ikemen GO (MIT)'],
@@ -476,19 +477,13 @@ const SLOTS = 8;
 function selectUpdate(ins) {
   const s = app.sel;
   const n = app.roster.length;
-  // who controls which side?
-  const ctlFor = (side) => {
-    if (s.mode === 'versus') return ins[side];
-    if (side === 0) return ins[0];
-    // P2 side in 1P modes: P1 controls it after locking P1 (vs cpu / training / watch)
-    if (s.mode === 'arcade') return null;
-    return s.locked[0] ? ins[0] : null;
-  };
+  // Assign inputs before either cursor can consume this tick's confirm.
+  const sharedInput = s.mode !== 'versus';
+  const activeSide = s.locked[0] && s.mode !== 'arcade' ? 1 : 0;
   if (ins.esc || (ins[0].back && !s.locked[0] && !s.palMode[0])) { audio.back(); go('menu'); return; }
   for (let side = 0; side < 2; side++) {
-    const i = ctlFor(side);
-    if (!i || s.locked[side]) continue;
-    if (side === 1 && s.mode !== 'versus' && !s.locked[0]) continue;
+    if (s.locked[side] || (sharedInput && side !== activeSide)) continue;
+    const i = sharedInput ? ins[0] : ins[side];
     if (s.palMode[side]) {
       const pc = app.roster[s.cursor[side]].palettes.length;
       if (i.left) { s.pal[side] = (s.pal[side] + pc - 1) % pc; audio.move(); }

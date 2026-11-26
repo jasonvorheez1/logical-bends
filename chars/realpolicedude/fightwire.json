@@ -1,0 +1,45 @@
+{
+  "def": "RealPoliceDude10.def",
+  "tagline": "LEON!!! HAAAALP!!!",
+  "nativeAI": true,
+  "easy": {
+    "special": { "N": "MachineGun", "F": "PoliceBrutality_b", "B": "KitchenGun_y", "U": "SpeedRun_y", "D": "Boulder_a", "DF": "RocketLauncher", "DB": "Magnum" },
+    "ex": { "N": "RocketLauncher", "F": "PoliceBrutality_c", "B": "KitchenGun_z", "U": "SpeedRun_z", "D": "Boulder_c" },
+    "super": { "N": "RealOriginalEnding", "F": "RealOriginalEnding", "B": "RealCavitySearch", "U": "RealMVPMike", "D": "RealUndercoverMission" }
+  },
+  "autoCombo": { "medium": "y", "heavy": "z" },
+  "combo": {
+    "ranks": {
+      "light": [200, 230, 400, 430, 600, 630],
+      "medium": [210, 216, 217, 240, 410, 440, 610, 640],
+      "heavy": [220, 250, 251, 450, 620, 650],
+      "launcher": [420]
+    },
+    "specialRange": [1000, 1999],
+    "superRange": [3000, 3999],
+    "jumpCancel": [420],
+    "jump": [40]
+  },
+  "movelist": {
+    "Specials (E + direction)": [
+      ["Excessive Force (Machine Gun)", "E", "QCF + Y"],
+      ["Excessive Force (Magnum / Rocket)", "E + Down-Back / Down-Fwd", "QCF + X / Z"],
+      ["Police Brutality", "E + Fwd", "QCF + A/B/C"],
+      ["BANG! (Kitchen Gun)", "E + Back", "QCB + X/Y/Z"],
+      ["Speedrunning Tactics", "E + Up", "F, D, DF + X/Y/Z"],
+      ["Quick Time Event", "E + Down", "QCB + A/B/C"],
+      ["Strongest version", "E + Q + direction", ""]
+    ],
+    "Supers (Q + direction)": [
+      ["Real Original Ending (1 bar)", "Q / Q + Fwd", "QCF + X+Y"],
+      ["Real Cavity Search (1 bar)", "Q + Back", "QCB + X+Y"],
+      ["Real MVP Mike (2 bars)", "Q + Up", "F, D, DF + X+Y"],
+      ["Real Undercover Mission (2 bars)", "Q + Down", "QCF + A+B"]
+    ],
+    "Other": [
+      ["Mind Blowing Suplex", "L + ,", "X + A"],
+      ["Roll", "; + .", "Y + B"],
+      ["Armored Ashley", "QCB + Start", ""]
+    ]
+  }
+}

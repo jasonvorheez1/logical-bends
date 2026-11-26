@@ -49,5 +49,5 @@ All keys can be rebound in Options → Controls Setup (saved in the browser). Me
 P2: arrows · Num 4 5 6 / 1 2 3 · Num 7 / 9 · Num Enter.
 
 ## Credits
-Dee Bee Kaw and Evil Kung Fu Man by The_None, Uppercut by The_None, Kanae by aokmaniac13 (all via Logical Bends). Buster by Brergrsart. Kung Fu Man by Elecbyte.
+Dee Bee Kaw and Evil Kung Fu Man by The_None, Uppercut by The_None, Kanae by aokmaniac13 (all via Logical Bends). Buster and Real Police Dude by Brergrsart. Nostalgic Ballz by AdamLexus. Kung Fu Man by Elecbyte.
 Hit sparks/common sounds from Ikemen GO. Character files keep their own readmes.

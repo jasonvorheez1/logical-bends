@@ -169,7 +169,8 @@ class Parser {
           return I(c => {
             const n = num(nf(c));
             const et = c.anim.elemTimeOf(n);
-            const ok = c.anim.elemNo() >= n && cmp(et, num(m.f(c)));
+            if (!c.anim.anim || n < 1 || n > c.anim.anim.frames.length) return 0;
+            const ok = cmp(et, num(m.f(c)));
             return (neg ? !ok : ok) ? 1 : 0;
           });
         }
@@ -325,6 +326,11 @@ class Parser {
         const t2 = b.t === 'f' || d.t === 'f' ? 'f' : (b.t === 's' ? 's' : 'i');
         if (name === 'ifelse') return { f: c => { const x = num(a.f(c)); const y = b.f(c), z = d.f(c); return x ? y : z; }, t: t2 };
         return { f: c => (num(a.f(c)) ? b.f(c) : d.f(c)), t: t2 };
+      }
+      // MUGEN 1.1: convert a value authored at 240p/480p/720p into this character's local coords
+      case 'const240p': case 'const480p': case 'const720p': {
+        const [a] = this.args(); const base = +name.slice(5, -1);
+        return F(c => num(a.f(c)) * ((c.root?.def?.localcoord?.[1] || 240) / base));
       }
       case 'abs': { const [a] = this.args(); return { f: c => Math.abs(num(a.f(c))), t: a.t }; }
       case 'floor': { const [a] = this.args(); return I(c => Math.floor(num(a.f(c)))); }

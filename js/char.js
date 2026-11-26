@@ -57,21 +57,15 @@ function pPrefixed(ctrl, key, c) {
 }
 
 // attribute string "S, NA" -> { st: 'S', types: ['NA'] }
-function parseAttr(s) {
+export function parseAttr(s) {
   s = (s || '').toUpperCase().split(',').map(t => t.trim());
   return { st: s[0] || '', types: s.slice(1).filter(Boolean) };
 }
-function attrMatches(slotAttr, hitAttr) {
-  // slotAttr: "SCA, NA, SA" style from NotHitBy/HitBy
-  const sl = parseAttr(slotAttr);
-  const st = hitAttr.st;
-  if (!st.split('').some(ch => sl.st.includes(ch))) return false;
-  if (!sl.types.length) return true;
-  const ht = hitAttr.types[0] || 'NA';
-  return sl.types.some(t => {
-    const [a, b] = [t[0], t[1]];
-    return (a === 'A' || a === ht[0]) && (b === 'A' || b === ht[1]);
-  });
+export function attrMatches(filter, hitAttr) {
+  if (![...hitAttr.st].some(state => filter.st.includes(state))) return false;
+  const type = hitAttr.types[0] || 'NA';
+  return !filter.types.length || filter.types.some(flag =>
+    (flag[0] === 'A' || flag[0] === type[0]) && flag[1] === type[1]);
 }
 
 const HIT_TYPES = { high: 1, low: 2, trip: 3, none: 0 };
@@ -81,6 +75,8 @@ export class Char {
   constructor(fight, def, opts = {}) {
     this.fight = fight;
     this.def = def;
+    this.xscale = def.consts['size.xscale'] ?? 1;
+    this.yscale = def.consts['size.yscale'] ?? 1;
     this.playerId = nextPlayerId++;
     this.isHelper = !!opts.parent;
     this.parent = opts.parent || null;
@@ -115,7 +111,7 @@ export class Char {
     this.targets = [];
     this.ghv = this.blankGHV();
     this.pauseTime = 0; // hitpause / hitshake
-    this.notHitBy = [null, null]; this.hitBy = [null, null];
+    this.hitBy = [null, null];
     this.hitOverride = [];
     this.attackMul = 1; this.defenceMul = 1;
     this.helpers = []; // only on root: all descendants
@@ -163,6 +159,8 @@ export class Char {
   // ---------- basic queries used by triggers ----------
   get alive() { return this.life > 0; }
   constant(key) {
+    if (key === 'size.xscale') return this.xscale;
+    if (key === 'size.yscale') return this.yscale;
     const v = this.root.def.consts[key];
     if (v !== undefined) return v;
     if (key.endsWith('.x') || key.endsWith('.y')) return 0;
@@ -193,11 +191,7 @@ export class Char {
   hitDefAttrMatch(st, flags) {
     const hd = this.hitdef;
     if (!hd || this.movetype !== 'A') return false;
-    const a = hd.attr;
-    if (!a.st.split('').some(ch => st.includes(ch))) return false;
-    if (!flags.length) return true;
-    const t = a.types[0] || 'NA';
-    return flags.some(f => (f[0] === 'A' || f[0] === t[0]) && (f[1] === 'A' || f[1] === t[1]));
+    return attrMatches({ st, types: flags }, hd.attr);
   }
   selfAnimExist(n) { return this.root.def.anims.has(n); }
   animExist(n) { return (this.animOwner || this.def).anims.has(n); }
@@ -360,15 +354,18 @@ export class Char {
       // FIGHTWIRE combo layer: open a cancel window for chains/specials/supers
       const ctrlBefore = this.ctrl;
       const cw = !paused && this.fight.comboSystem ? this.cancelWindow() : null;
-      if (cw) { this.cancelFilter = cw; this.ctrl = 1; }
+      if (cw) this.cancelFilter = cw;
+      // Let the character process an Up shortcut during grounded jump startup.
+      const jumpShortcut = this.easyJumpCancel && !paused && this.stateNo === 40;
+      if (cw || jumpShortcut) this.ctrl = 1;
       const st0 = this.stateNo, cc0 = this._changeCount;
       if (this.keyctrl) this.runStateDef(ownDef.states.get(-1), true, paused);
       // a move just started from input: drop stale buffered presses so they can't re-fire the same move
       if (this._changeCount !== cc0 && this.cmd && this.movetype === 'A') this.cmd.clear();
-      if (cw) {
+      if (cw || jumpShortcut) {
         this.cancelFilter = null;
         if (this._changeCount === cc0) this.ctrl = ctrlBefore;
-        else this.combo.cancelled = true;
+        else if (cw) this.combo.cancelled = true;
       }
       if (!paused && this._changeCount === cc0) this.builtinControl();
     }
@@ -560,7 +557,7 @@ export class Char {
         const slot = has(ct, 'value2') ? 1 : 0;
         const val = ct.params[slot ? 'value2' : 'value'] || '';
         const time = has(ct, 'time') ? pn(ct, 'time', c) : 1;
-        (t === 'nothitby' ? this.notHitBy : this.hitBy)[slot] = { attr: val, time };
+        this.hitBy[slot] = time === 0 ? null : { attr: parseAttr(val), exclude: t === 'nothitby', time };
         return;
       }
       case 'hitoverride': {
@@ -571,8 +568,8 @@ export class Char {
       case 'movehitreset': this.moveContact = this.moveHit = this.moveGuarded = 0; return;
       case 'hitadd': this.hitCount += pn(ct, 'value', c); this.fight.addComboHits(this, pn(ct, 'value', c)); return;
       case 'hitvelset': {
-        if (!has(ct, 'x') || pn(ct, 'x', c)) this.vel.x = this.ghv.xvel;
-        if (!has(ct, 'y') || pn(ct, 'y', c)) this.vel.y = this.ghv.yvel;
+        if (pn(ct, 'x', c)) this.vel.x = this.ghv.xvel;
+        if (pn(ct, 'y', c)) this.vel.y = this.ghv.yvel;
         return;
       }
       case 'hitfallset': {
@@ -774,6 +771,8 @@ export class Char {
     const root = this.root;
     if (root.helpers.length > 56) return;
     const h = new Char(this.fight, root.def, { parent: this, helperId: has(ct, 'id') ? pn(ct, 'id', c) : 0, name: pstr(ct, 'name'), palIndex: root.palIndex, pal: root.pal, slot: root.slot, ai: root.ai });
+    h.xscale = pn(ct, 'size.xscale', c, 0, this.xscale);
+    h.yscale = pn(ct, 'size.yscale', c, 0, this.yscale);
     h.palKey = root.palKey;
     h.helperType = pstr(ct, 'helpertype', 'normal');
     h.lifeMax = root.lifeMax; h.life = root.lifeMax;
